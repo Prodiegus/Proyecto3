@@ -76,7 +76,7 @@ public class Main {
                 case 7:
                     // validamos que el tipo de memoria sea LRU o FIFO
                     do {
-                        System.out.print("\u001B[34mIngrese el tipo de memoria (LRU o FIFO): \u001B[34m");
+                        System.out.print("\u001B[34mIngrese el tipo de memoria (LRU o FIFO): \u001B[0m \u001B[31m1");
                         tipoMemoria = System.console().readLine();
                     } while (!tipoMemoria.equals("LRU") && !tipoMemoria.equals("FIFO"));
                     simulador.cambiarAlgoritmo(tipoMemoria);
