@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Queue;
 
 public class SimuladorSwapping {
+    String tipoMemoria = "LRU"; // "LRU" o "FIFO
     List<Proceso> memoriaPrincipal = new ArrayList<>();
     List<Proceso> memoriaIntercambio = new ArrayList<>();
     LinkedList<Proceso> colaLRU = new LinkedList<>();
@@ -47,6 +48,58 @@ public class SimuladorSwapping {
         }
     }
 
+    public void verProcesosMemoriaPrincipal() {
+        // Mostrar procesos en memoria principal 
+        // salida en color rosa
+        System.out.println("\u001B[35mProcesos en memoria principal\u001B[0m");
+        for (Proceso proceso : memoriaPrincipal) {
+            System.out.println("Proceso: " + proceso.nombre);
+        }
+    }
+
+    public void verProcesosMemoriaIntercambio() {
+        // Mostrar procesos en memoria de intercambio
+        // salida en color rosa
+        System.out.println("\u001B[35mProcesos en memoria de intercambio\u001B[0m");
+        for (Proceso proceso : memoriaIntercambio) {
+            System.out.println("Proceso: " + proceso.nombre);
+        }
+    }
+
+    public void verTodosLosProcesos() {
+        // Mostrar todos los procesos
+        // salida en color rosa
+        System.out.println("\u001B[35mProcesos en memoria principal\u001B[0m");
+        for (Proceso proceso : memoriaPrincipal) {
+            System.out.println("Proceso: " + proceso.nombre);
+        }
+        //salida en color rosa
+        System.out.println("\u001B[35mProcesos en memoria de intercambio\u001B[0m");
+        for (Proceso proceso : memoriaIntercambio) {
+            System.out.println("Proceso: " + proceso.nombre);
+        }
+    }
+
+    public void verColaProcesos() {
+        // Mostrar cola de procesos
+        // salida en color rosa
+        System.out.println("\u001B[35mCola de procesos\u001B[0m");
+        if (tipoMemoria.equals("LRU")) {
+            for (Proceso proceso : colaLRU) {
+                System.out.println("Proceso: " + proceso.nombre);
+            }
+        } else {
+            for (Proceso proceso : colaFIFO) {
+                System.out.println("Proceso: " + proceso.nombre);
+            }
+        }
+    }
+
+    public void cambiarAlgoritmo(String tipoMemoria) {
+        // Cambiar algoritmo de reubicación
+        this.tipoMemoria = tipoMemoria;
+    }
+    
     public static void main(String[] args) {
         SimuladorSwapping simulador = new SimuladorSwapping();
 
