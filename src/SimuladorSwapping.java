@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Queue;
 
 public class SimuladorSwapping {
-    String tipoMemoria = "LRU"; // "LRU" o "FIFO
+    String tipoMemoria = "FIFO"; // "LRU" o "FIFO
     List<Proceso> memoriaPrincipal = new ArrayList<>();
     List<Proceso> memoriaIntercambio = new ArrayList<>();
     LinkedList<Proceso> colaLRU = new LinkedList<>();
@@ -111,5 +111,39 @@ public class SimuladorSwapping {
         // Ejecutar procesos y simular reubicación
         simulador.ejecutarProcesos();
         simulador.ejecutarProcesos();
+    }
+
+    public void eliminarProceso(String nombre) {
+        // Eliminar proceso de la memoria principal
+        for (int i = 0; i < memoriaPrincipal.size(); i++) {
+            if (memoriaPrincipal.get(i).nombre.equals(nombre)) {
+                memoriaPrincipal.remove(i);
+                break;
+            }
+        }
+
+        // Eliminar proceso de la memoria de intercambio
+        for (int i = 0; i < memoriaIntercambio.size(); i++) {
+            if (memoriaIntercambio.get(i).nombre.equals(nombre)) {
+                memoriaIntercambio.remove(i);
+                break;
+            }
+        }
+
+        // Eliminar proceso de la cola LRU
+        for (int i = 0; i < colaLRU.size(); i++) {
+            if (colaLRU.get(i).nombre.equals(nombre)) {
+                colaLRU.remove(i);
+                break;
+            }
+        }
+
+        // Eliminar proceso de la cola FIFO
+        for (int i = 0; i < colaFIFO.size(); i++) {
+            if(colaFIFO.peek().nombre.equals(nombre)){
+                colaFIFO.remove();
+                break;
+            }
+        }
     }
 }

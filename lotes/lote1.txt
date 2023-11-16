@@ -1,0 +1,8 @@
+proceso1 2
+proceso2 3
+proceso3 1
+proceso4 6
+proceso5 4
+proceso6 5
+proceso7 7
+proceso8 8
