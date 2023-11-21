@@ -302,6 +302,9 @@ public class Main {
                     System.console().readLine();
                 }
             } catch (Exception e) {
+                // limpiamos la pantalla
+                System.out.print("\033[H\033[2J");
+                System.out.flush();
                 System.out.println("\n\u001B[34m"+titulo+"\u001B[0m"); 
                 // nombre del autor en color verde
                 System.out.println("\u001B[32mAutor: \u001B[0m"+"\u001B[01m\u001B[35mDiego Fernandez\u001B[0m");
@@ -320,7 +323,7 @@ public class Main {
                 System.out.println("\u001B[32m change (-FIFO o -LRU).\u001B[0m"+" Cambiar algoritmo de reubicacion");
                 System.out.println("\u001B[32m exit\u001B[0m"+" Salir");
                 System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
-                //System.out.println(e.getMessage());
+                System.out.println(e);
                 System.console().readLine();
             }
         }

@@ -131,8 +131,142 @@ public class SimuladorSwapping {
     }
 
     public void ejecutarProcesos() {
-        System.out.println("Ejecutando procesos...(Aun no funciono)");
+        String titulo = "\n"+
+            "\t┌───┐      ┌┐     ┌┐\n"+
+            "\t│┌─┐│      ││     ││\n"+
+            "\t│└──┬┬┐┌┬┐┌┤│┌──┬─┘├──┬─┐\n"+
+            "\t└──┐├┤└┘││││││┌┐│┌┐│┌┐│┌┘\n"+
+            "\t│└─┘│││││└┘│└┤┌┐│└┘│└┘││\n"+
+            "\t└───┴┴┴┴┴──┴─┴┘└┴──┴──┴┘\n"+
+            "\t┌───┐\n"+
+            "\t│┌─┐│\n"+
+            "\t│└──┬┐┌┐┌┬──┬──┬──┬┬─┐┌──┐\n"+
+            "\t└──┐│└┘└┘│┌┐│┌┐│┌┐├┤┌┐┤┌┐│\n"+
+            "\t│└─┘├┐┌┐┌┤┌┐│└┘│└┘│││││└┘│\n"+
+            "\t└───┘└┘└┘└┘└┤┌─┤┌─┴┴┘└┴─┐│\n"+
+            "\t            ││ ││     ┌─┘│\n"+
+            "\t            └┘ └┘     └──┘\n";
+        
+        // mostramos un contador de tiempo de lo que llevamos de ejecucion en segundos
+        long startTime = System.currentTimeMillis();
+        Proceso proceso = null;
+        while (hayProcesos()) {
+            // tomamos el proceso de la memoria principal dependiendo del algoritmo
+            if (tipoMemoria.equals("LRU")) {
+                // sacamos de la cola el proceso que sea last recently used
+                proceso = colaLRUMain.removeFirst();
+                colaFIFOMain.remove(proceso);
+            } else if (tipoMemoria.equals("FIFO")) {
+                // sacamos de la cola el proceso que sea first in first out
+                proceso = colaFIFOMain.poll();
+                colaLRUMain.remove(proceso);
+            }
+            while (proceso != null && proceso.quantum > 0) {
+                proceso = run(proceso);
+                // buscar el proceso en la memoria principal
+                for (int j = 0; j < memoriaPrincipal.length; j++) {
+                    if (memoriaPrincipal[j] != null && memoriaPrincipal[j].equals(proceso)) {
+                        memoriaPrincipal[j] = proceso;
+                        break;
+                    }
+                }
+                // limpiamos la consola
+                System.out.print("\033[H\033[2J");
+                System.out.flush();
+                // mostramos el titulo en color verde
+                System.out.println("\u001B[32m" + titulo + "\u001B[0m");
+                System.out.println("proceso: " + proceso.nombre);
+                System.out.println("Quedan procesos: " + (hayProcesos()? "si" : "no"));
+                System.out.println("Tiempo: " + (System.currentTimeMillis() - startTime) / 1000 + " segundos");
+                verTodosLosProcesos();
+            }
+            System.out.println("se termino de ejecutar el proceso");
+            //traemos un proceso desde la memoria de intercambio dependiendo del algoritmo
+            if (tipoMemoria.equals("LRU")) {
+                // sacamos de la cola el proceso que sea last recently used
+                System.out.println("se saca de la memoria de intercambio");
+                if (!colaLRUSwap.isEmpty()) {
+                    proceso = colaLRUSwap.removeFirst();
+                    colaFIFOSwap.remove(proceso);
+                    // buscamos el proceso en la memoria intercamio
+                    for (int k = 0; k < memoriaIntercambio.length; k++) {
+                        if (memoriaIntercambio[k]!=null && memoriaIntercambio[k].equals(proceso)) {
+                            // saca el proceso de la memoria de intercambio
+                            memoriaIntercambio[k] = null;
+                            colaLRUMain.add(proceso);
+                            colaFIFOMain.add(proceso);
+                            break;
+                        }
+                    }
+                }else{
+                    proceso = null;
+                }
+            } else if (tipoMemoria.equals("FIFO")){
+                // sacamos de la cola el proceso que sea first in first out
+                if (!colaFIFOSwap.isEmpty()) {
+                    proceso = colaFIFOSwap.poll();
+                    colaLRUSwap.remove(proceso);
+                    // buscamos el proceso en la memoria intercamio
+                    for (int k = 0; k < memoriaIntercambio.length; k++) {
+                        if (memoriaIntercambio[k]!=null && memoriaIntercambio[k].equals(proceso)) {
+                            //saca el proceso de la memoria de intercambio
+                            memoriaIntercambio[k] = null;
+                            colaFIFOMain.add(proceso);
+                            colaLRUMain.add(proceso);
+                        }
+                    }
+                }else{
+                    proceso = null;
+                }
+            }
+            //System.out.println("se agrega a la memoria principal el proceso "+((proceso!=null)?proceso.nombre:"que no existe el proceso"));
+            // agregamos el proceso a la memoria principal
+            for (int j = 0; j < memoriaPrincipal.length; j++) {
+                if (memoriaPrincipal[j] == null) {
+                    memoriaPrincipal[j] = proceso;
+                    break;
+                }
+            }
+            System.out.print("\033[H\033[2J");
+            System.out.flush();
+            // mostramos el titulo en color amarillo
+            System.out.println("\u001B[33m" + titulo + "\u001B[0m");
+            System.out.println("Quedan procesos: " + (hayProcesos()? "si" : "no"));
+            System.out.println("Tiempo: " + (System.currentTimeMillis() - startTime) / 1000 + " segundos");
+            verTodosLosProcesos();
+        }
+        
     }
+    private Proceso run(Proceso proceso){
+        // correr proceso
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        proceso.quantum--;
+        // si el proceso ya termino lo eliminamos
+        if (proceso.quantum == 0) {
+            eliminarProceso(proceso.nombre);
+        }
+        return proceso;
+    }
+
+    private boolean hayProcesos() {
+        // Verificar si hay procesos en memoria principal
+        for (Proceso proceso : memoriaPrincipal) {
+            if (proceso != null) {
+                return true;
+            }
+        }
+        // Verificar si hay procesos en memoria de intercambio
+        for (Proceso proceso : memoriaIntercambio) {
+            if (proceso != null) {
+                return true;
+            }
+        }
+        return false;
+    }   
 
     public void verProcesosMemoriaPrincipal() {
         // Mostrar procesos en memoria principal 
