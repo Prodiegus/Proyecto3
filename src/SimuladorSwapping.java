@@ -39,6 +39,8 @@ public class SimuladorSwapping {
             }
             // Si no hay espacio disponible, utilizar memoria de intercambio y agregar a la cola
             if (i == memoriaPrincipal.length - 1) {
+                //System.out.println("No hay espacio en la memoria principal");
+                //System.console().readLine();
                 espacioDisponible = false;
             }
         }
@@ -46,6 +48,7 @@ public class SimuladorSwapping {
             if (tipoMemoria.equals("LRU")) {
                 // sacamos de la cola el proceso que sea last recently used
                 aux = colaLRUMain.removeFirst();
+                colaFIFOMain.remove(aux);
                 // buscamos el proceso en la memoria principal
                 for (int i = 0; i < memoriaPrincipal.length; i++) {
                     if (memoriaPrincipal[i].equals(aux)) {
@@ -66,6 +69,7 @@ public class SimuladorSwapping {
                         if (!espacioEnSwap) {
                             // sacamos de la cola el proceso que sea last recently used
                             aux2 = colaLRUSwap.removeFirst();
+                            colaFIFOSwap.remove(aux2);
                             // buscamos el proceso en la memoria intercamio
                             for (int k = 0; k < memoriaIntercambio.length; k++) {
                                 if (memoriaIntercambio[k].equals(aux2)) {
@@ -77,15 +81,13 @@ public class SimuladorSwapping {
                                 }
                             }
                         }
-                        // agregamos el proceso a la cola
-                        colaLRUMain.add(nuevoProceso);
-                        colaFIFOMain.add(nuevoProceso);
                         break;
                     }
                 }
             } else if (tipoMemoria.equals("FIFO")){
                 // sacamos de la cola el proceso que sea first in first out
                 aux = colaFIFOMain.poll();
+                colaLRUMain.remove(aux);
                 // buscamos el proceso en la memoria principal
                 for (int i = 0; i < memoriaPrincipal.length; i++) {
                     if (memoriaPrincipal[i].equals(aux)) {
@@ -106,6 +108,7 @@ public class SimuladorSwapping {
                         if (!espacioEnSwap) {
                             // sacamos de la cola el proceso que sea first in first out
                             aux2 = colaFIFOSwap.poll();
+                            colaLRUSwap.remove(aux2);
                             // buscamos el proceso en la memoria intercamio
                             for (int k = 0; k < memoriaIntercambio.length; k++) {
                                 if (memoriaIntercambio[k].equals(aux2)) {
@@ -118,17 +121,17 @@ public class SimuladorSwapping {
                             }
                         }
                         // agregamos el proceso a la cola
-                        colaFIFOMain.add(nuevoProceso);
-                        colaLRUMain.add(nuevoProceso);
                         break;
                     }
                 }
             }
         }
+        colaFIFOMain.add(nuevoProceso);
+        colaLRUMain.add(nuevoProceso);
     }
 
     public void ejecutarProcesos() {
-        
+        System.out.println("Ejecutando procesos...(Aun no funciono)");
     }
 
     public void verProcesosMemoriaPrincipal() {
@@ -164,23 +167,25 @@ public class SimuladorSwapping {
         int memoriaPrincipalLength = memoriaPrincipal.length;
         int memoriaIntercambioLength = memoriaIntercambio.length;
         int max = Math.max(memoriaPrincipalLength, memoriaIntercambioLength);
-        for (int i = 0; i < max; i++) {
+        int i = 0;
+        for (i = 0; i < max; i++) {
             if (i >= memoriaPrincipalLength) {
-                salida = ("| \t | \t | " + ((memoriaIntercambio[i]!=null) ? memoriaIntercambio[i] : "      Celda | vacia      ") + " |");
+                salida = ("\t|" + ((memoriaIntercambio[i]!=null) ? memoriaIntercambio[i] : "      Celda | vacia      ") + " |");
                 salidas.add(salida);
                 continue;
-            } else if (i >= memoriaIntercambioLength) {
+            }if (i >= memoriaIntercambioLength) {
                 salida = ("| " + ((memoriaPrincipal[i]!=null) ? memoriaPrincipal[i] : "      Celda | vacia      ") + " | \t | \t |");
                 salidas.add(salida);
                 continue;
-            }else {
+            }
+            if (i<memoriaPrincipalLength && i<memoriaIntercambioLength){
                 salida =  ("| " + ((memoriaPrincipal[i]!=null) ? memoriaPrincipal[i] : "      Celda | vacia      ") + " | \t | " +((memoriaIntercambio[i]!=null) ? memoriaIntercambio[i] : "      Celda | vacia      ") + " |");
                 salidas.add(salida);
             }
         }
         // eliminamos los espacios vacios en las salidas
         procesos.add(salidas.get(0).split("\t"));
-        for (int i = 1; i < salidas.size(); i++) {
+        for (i = 1; i < salidas.size(); i++) {
             salida = salidas.get(i);
             salida = salida.replace(" ", "");
             procesos.add(salida.split("\t"));
@@ -188,7 +193,7 @@ public class SimuladorSwapping {
         // calamos la cadena mas larga en 0 y 1
         int max0 = 0;
         int max1 = 0;
-        for (int i = 0; i < procesos.size(); i++) {
+        for (i = 0; i < procesos.size(); i++) {
             String[] proceso = procesos.get(i);
             if (proceso[0].length() > max0) {
                 max0 = proceso[0].length();
@@ -198,7 +203,7 @@ public class SimuladorSwapping {
             }
         }
         // alargamos las cadenas mas cortas con espacios antes del ultimo |
-        for (int i = 0; i < procesos.size(); i++) {
+        for (i = 0; i < procesos.size(); i++) {
             String[] proceso = procesos.get(i);
             if (proceso[0].length() < max0) {
                 int diferencia = max0 - proceso[0].length();
@@ -217,23 +222,23 @@ public class SimuladorSwapping {
         }
         System.out.println(procesos.get(0)[0] + "\t\t" + procesos.get(0)[1]);
         // imprmimos tantos - como la cadena mas larga en 0 y 1 y separamos con un tab
-        for (int i = 0; i < max0; i++) {
+        for (i = 0; i < max0; i++) {
             System.out.print("-");
         }
         System.out.print("\t");
-        for (int i = 0; i < max1; i++) {
+        for (i = 0; i < max1; i++) {
             System.out.print("-");
         }
         System.out.println();
         // imprimimos los procesos
-        for (int i = 1; i < procesos.size(); i++) {
+        for (i = 1; i < procesos.size(); i++) {
             System.out.println(procesos.get(i)[0] + "\t" + procesos.get(i)[1]);
         }
-        for (int i = 0; i < max0; i++) {
+        for (i = 0; i < max0; i++) {
             System.out.print("-");
         }
         System.out.print("\t");
-        for (int i = 0; i < max1; i++) {
+        for (i = 0; i < max1; i++) {
             System.out.print("-");
         }
         System.out.println();
