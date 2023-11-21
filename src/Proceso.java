@@ -8,4 +8,9 @@ public class Proceso {
         this.nombre = nombre;
         this.quantum = quantum;
     }
+
+    @Override
+    public String toString() {
+        return "[Proceso:" + nombre + "| Quantum:" + quantum + "]";
+    }
 }

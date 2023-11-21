@@ -21,10 +21,6 @@ public class Main {
         String tipoMemoria = "FIFO"; // "LRU" o "FIFO
         int tamanoMemoriaPrincipal = 10;
         int tamanoMemoriaIntercambio = 10;
-        
-        SimuladorSwapping simulador = new SimuladorSwapping();
-
-        simulador.cambiarAlgoritmo(tipoMemoria);
 
         String nombre;
         String titulo = "\n"+
@@ -139,95 +135,142 @@ public class Main {
                 System.exit(0);
             }
         }
-
+        SimuladorSwapping simulador = new SimuladorSwapping(tamanoMemoriaIntercambio, tamanoMemoriaPrincipal, tipoMemoria);
+        simulador.cambiarAlgoritmo(tipoMemoria);
+        
         while (true) {
-            //limpiamos la pantalla
-            System.out.print("\033[H\033[2J");
-            System.out.flush();
-            // menu de opciones
-            // bienvenido estara en color azul
-            System.out.println("\n\u001B[34m"+titulo+"\u001B[0m"); 
-            // nombre del autor en color verde
-            System.out.println("\u001B[32mAutor: \u001B[0m"+"\u001B[01m\u001B[35mDiego Fernandez\u001B[0m");
-            // tipo de memoria estara en color rojo
-            System.out.println("\u001B[21mTipo de memoria:\u001B[0m \u001B[31m"+tipoMemoria+"\u001B[0m\n");
-            System.out.print("Ingrese la opcion que desea realizar \u001B[32m-help\u001B[0m para ver las opciones: \u001B[34m");
-            // el numero de la opcion estara en color verde
-            String opcion[] = System.console().readLine().split(" ");
-            // una vez que se lea la opcion se le borrara la vista de la entrada al usuario
-            System.out.print("\u001B[0m\033[H\033[2J");
-            System.out.flush();
-            System.out.println("\n\u001B[35m"+titulo+"\u001B[0m");
-            if (opcion[0].equals("add")) {
-                if(opcion[1].equals("-l")){
-                    //capturamos el lote de procesos
-                    nombre = opcion[2];
-                    //leemos el archivo
-                    try {
-                        File archivo = new File("lotes/"+nombre);
-                        FileReader fr = new FileReader(archivo);
-                        BufferedReader br = new BufferedReader(fr);
-                        String linea;
-                        while((linea = br.readLine()) != null){
-                            String[] proceso = linea.split(" ");
-                            nombre = "\u001B[34m"+proceso[0]+"\u001B[0m";
-                            quantum = Integer.parseInt(proceso[1]);
-                            simulador.agregarProceso(nombre, quantum);
+            try {
+                //limpiamos la pantalla
+                System.out.print("\033[H\033[2J");
+                System.out.flush();
+                // menu de opciones
+                // bienvenido estara en color azul
+                System.out.println("\n\u001B[34m"+titulo+"\u001B[0m"); 
+                // nombre del autor en color verde
+                System.out.println("\u001B[32mAutor: \u001B[0m"+"\u001B[01m\u001B[35mDiego Fernandez\u001B[0m");
+                // tipo de memoria estara en color rojo
+                System.out.println("\u001B[21mTipo de memoria:\u001B[0m \u001B[31m"+tipoMemoria+"\u001B[0m\n");
+                // mostramos la memoria principal y la memoria de intercambio
+                simulador.verTodosLosProcesos();
+                System.out.print("Ingrese la opcion que desea realizar \u001B[32m-help\u001B[0m para ver las opciones: \u001B[34m");
+                // el numero de la opcion estara en color verde
+                String opcion[] = System.console().readLine().split(" ");
+                // una vez que se lea la opcion se le borrara la vista de la entrada al usuario
+                System.out.print("\u001B[0m\033[H\033[2J");
+                System.out.flush();
+                System.out.println("\n\u001B[35m"+titulo+"\u001B[0m");
+                if (opcion[0].equals("add")) {
+                    if(opcion[1].equals("-l")){
+                        //capturamos el lote de procesos
+                        nombre = opcion[2];
+                        //leemos el archivo
+                        try {
+                            File archivo = new File("lotes/"+nombre);
+                            FileReader fr = new FileReader(archivo);
+                            BufferedReader br = new BufferedReader(fr);
+                            String linea;
+                            while((linea = br.readLine()) != null){
+                                String[] proceso = linea.split(" ");
+                                nombre = "\u001B[34m"+proceso[0]+"\u001B[0m";
+                                quantum = Integer.parseInt(proceso[1]);
+                                simulador.agregarProceso(nombre, quantum);
+                            }
+                            br.close();
+                        } catch (Exception e) {
+                            System.out.print("\033[H\033[2J");
+                            System.out.flush();
+                            // mostramos el titulo en color morado
+                            System.out.println("\n\u001B[35m"+titulo+"\u001B[0m");
+                            System.out.println("No se encontro el lote\n");
+                            System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
+                            System.console().readLine();
+                            System.out.print("\033[H\033[2J");
+                            System.out.flush();
                         }
-                        br.close();
-                    } catch (Exception e) {
-                        System.out.print("\033[H\033[2J");
-                        System.out.flush();
-                        // mostramos el titulo en color morado
-                        System.out.println("\n\u001B[35m"+titulo+"\u001B[0m");
-                        System.out.println("No se encontro el lote\n");
+                    }else{
+                        nombre = "\u001B[34m"+opcion[1]+"\u001B[0m";
+                        quantum = Integer.parseInt(opcion[2]);
+                        simulador.agregarProceso(nombre, quantum);
+                    }
+                } else if (opcion[0].equals("run")) {
+                    simulador.ejecutarProcesos();
+                    System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
+                    System.console().readLine();
+                } else if (opcion[0].equals("look")) {
+                    if (opcion.length == 1) {
+                        System.out.println("\u001B[32m add <nombre_proceso> <quantum>.\u001B[0m"+" Agregar proceso");
+                        System.out.println("\u001B[32m add -l <Nombre_Archivo.txt>.\u001B[0m"+" Agrega un lote de procesos que debe ser cargado desde un fichero");
+                        System.out.println("\u001B[32m run\u001B[0m"+" Ejecutar procesos");
+                        System.out.println("\u001B[32m look -main\u001B[0m"+" Ver Procesos en memoria principal");
+                        System.out.println("\u001B[32m look -swap\u001B[0m"+" Ver Procesos en memoria de intercambio");
+                        System.out.println("\u001B[32m look -all\u001B[0m"+" Ver todos los procesos");
+                        System.out.println("\u001B[32m look -queue\u001B[0m"+" Ver cola de procesos");
+                        System.out.println("\u001B[32m look -help\u001B[0m"+" Ver opciones de look");
+                        System.out.println("\u001B[32m look \u001B[0m"+" Ver opciones de look");
+                        System.out.println("\u001B[32m kill <nombre_proceso>.\u001B[0m"+" Eliminar proceso");
+                        System.out.println("\u001B[32m change (-FIFO o -LRU).\u001B[0m"+" Cambiar algoritmo de reubicacion");
+                        System.out.println("\u001B[32m exit.\u001B[0m"+" Salir");
+                        System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
+                    System.console().readLine();
+                    } else if (opcion[1].equals("-main")) {
+                        simulador.verProcesosMemoriaPrincipal();
                         System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
                         System.console().readLine();
-                        System.out.print("\033[H\033[2J");
-                        System.out.flush();
+                    } else if (opcion[1].equals("-swap")) {
+                        simulador.verProcesosMemoriaIntercambio();
+                        System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
+                        System.console().readLine();
+                    } else if (opcion[1].equals("-all")) {
+                        simulador.verTodosLosProcesos();
+                        System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
+                        System.console().readLine();
+                    } else if (opcion[1].equals("-queue")) {
+                        simulador.verColaProcesos();
+                        System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
+                        System.console().readLine();
+                    } else if (opcion[1].equals("-help")) {
+                        System.out.println("\u001B[32m add <nombre_proceso> <quantum>.\u001B[0m"+" Agregar proceso");
+                        System.out.println("\u001B[32m add -l <Nombre_Archivo.txt>.\u001B[0m"+" Agrega un lote de procesos que debe ser cargado desde un fichero");
+                        System.out.println("\u001B[32m run\u001B[0m"+" Ejecutar procesos");
+                        System.out.println("\u001B[32m look -main\u001B[0m"+" Ver Procesos en memoria principal");
+                        System.out.println("\u001B[32m look -swap\u001B[0m"+" Ver Procesos en memoria de intercambio");
+                        System.out.println("\u001B[32m look -all\u001B[0m"+" Ver todos los procesos");
+                        System.out.println("\u001B[32m look -queue\u001B[0m"+" Ver cola de procesos");
+                        System.out.println("\u001B[32m look -help\u001B[0m"+" Ver opciones de look");
+                        System.out.println("\u001B[32m look \u001B[0m"+" Ver opciones de look");
+                        System.out.println("\u001B[32m kill <nombre_proceso>.\u001B[0m"+" Eliminar proceso");
+                        System.out.println("\u001B[32m change (-FIFO o -LRU).\u001B[0m"+" Cambiar algoritmo de reubicacion");
+                        System.out.println("\u001B[32m exit\u001B[0m"+" Salir");
+                        System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
+                        System.console().readLine();
+                    } else {
+                        System.out.println("\u001B[32m look -main\u001B[0m"+" Ver Procesos en memoria principal");
+                        System.out.println("\u001B[32m look -swap\u001B[0m"+" Ver Procesos en memoria de intercambio");
+                        System.out.println("\u001B[32m look -all\u001B[0m"+" Ver todos los procesos");
+                        System.out.println("\u001B[32m look -queue\u001B[0m"+" Ver cola de procesos");
+                        System.out.println("\u001B[32m look -help\u001B[0m"+" Ver opciones de look");
+                        System.out.println("\u001B[32m look \u001B[0m"+" Ver opciones de look");
+                        System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
+                        System.console().readLine();
                     }
-                }else{
+                } else if (opcion[0].equals("kill")) {
                     nombre = "\u001B[34m"+opcion[1]+"\u001B[0m";
-                    quantum = Integer.parseInt(opcion[2]);
-                    simulador.agregarProceso(nombre, quantum);
-                }
-            } else if (opcion[0].equals("run")) {
-                simulador.ejecutarProcesos();
-                System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
-                System.console().readLine();
-            } else if (opcion[0].equals("look")) {
-                if (opcion.length == 1) {
-                    System.out.println("\u001B[32m add <nombre_proceso> <quantum>.\u001B[0m"+" Agregar proceso");
-                    System.out.println("\u001B[32m add -l <Nombre_Archivo.txt>.\u001B[0m"+" Agrega un lote de procesos que debe ser cargado desde un fichero");
-                    System.out.println("\u001B[32m run\u001B[0m"+" Ejecutar procesos");
-                    System.out.println("\u001B[32m look -main\u001B[0m"+" Ver Procesos en memoria principal");
-                    System.out.println("\u001B[32m look -swap\u001B[0m"+" Ver Procesos en memoria de intercambio");
-                    System.out.println("\u001B[32m look -all\u001B[0m"+" Ver todos los procesos");
-                    System.out.println("\u001B[32m look -queue\u001B[0m"+" Ver cola de procesos");
-                    System.out.println("\u001B[32m look -help\u001B[0m"+" Ver opciones de look");
-                    System.out.println("\u001B[32m look \u001B[0m"+" Ver opciones de look");
-                    System.out.println("\u001B[32m kill <nombre_proceso>.\u001B[0m"+" Eliminar proceso");
-                    System.out.println("\u001B[32m change (-FIFO o -LRU).\u001B[0m"+" Cambiar algoritmo de reubicacion");
-                    System.out.println("\u001B[32m exit.\u001B[0m"+" Salir");
-                    System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
-                System.console().readLine();
-                } else if (opcion[1].equals("-main")) {
-                    simulador.verProcesosMemoriaPrincipal();
+                    simulador.eliminarProceso(nombre);
+                    System.out.println("\u001B[35mProceso: \u001B[0m"+nombre+" \u001B[31meliminado\u001B[0m");
                     System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
                     System.console().readLine();
-                } else if (opcion[1].equals("-swap")) {
-                    simulador.verProcesosMemoriaIntercambio();
-                    System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
-                    System.console().readLine();
-                } else if (opcion[1].equals("-all")) {
-                    simulador.verTodosLosProcesos();
-                    System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
-                    System.console().readLine();
-                } else if (opcion[1].equals("-queue")) {
-                    simulador.verColaProcesos();
-                    System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
-                    System.console().readLine();
-                } else if (opcion[1].equals("-help")) {
+                } else if (opcion[0].equals("change")) {
+                    if (opcion[1].equals("-FIFO") || opcion[1].equals("-LRU")) {
+                        tipoMemoria = opcion[1].substring(1);
+                        simulador.cambiarAlgoritmo(tipoMemoria);
+                    } else {
+                        System.out.println("Opcion no valida");
+                    }
+                } else if (opcion[0].equals("exit")) {
+                    System.out.print("\033[H\033[2J");
+                    System.out.flush();
+                    System.exit(0);
+                }else if (opcion[0].equals("-help")) {
                     System.out.println("\u001B[32m add <nombre_proceso> <quantum>.\u001B[0m"+" Agregar proceso");
                     System.out.println("\u001B[32m add -l <Nombre_Archivo.txt>.\u001B[0m"+" Agrega un lote de procesos que debe ser cargado desde un fichero");
                     System.out.println("\u001B[32m run\u001B[0m"+" Ejecutar procesos");
@@ -243,33 +286,27 @@ public class Main {
                     System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
                     System.console().readLine();
                 } else {
+                    System.out.println("\u001B[32m add <nombre_proceso> <quantum>.\u001B[0m"+" Agregar proceso");
+                    System.out.println("\u001B[32m add -l <Nombre_Archivo.txt>.\u001B[0m"+" Agrega un lote de procesos que debe ser cargado desde un fichero");
+                    System.out.println("\u001B[32m run\u001B[0m"+" Ejecutar procesos");
                     System.out.println("\u001B[32m look -main\u001B[0m"+" Ver Procesos en memoria principal");
                     System.out.println("\u001B[32m look -swap\u001B[0m"+" Ver Procesos en memoria de intercambio");
                     System.out.println("\u001B[32m look -all\u001B[0m"+" Ver todos los procesos");
                     System.out.println("\u001B[32m look -queue\u001B[0m"+" Ver cola de procesos");
                     System.out.println("\u001B[32m look -help\u001B[0m"+" Ver opciones de look");
                     System.out.println("\u001B[32m look \u001B[0m"+" Ver opciones de look");
+                    System.out.println("\u001B[32m kill <nombre_proceso>.\u001B[0m"+" Eliminar proceso");
+                    System.out.println("\u001B[32m change (-FIFO o -LRU).\u001B[0m"+" Cambiar algoritmo de reubicacion");
+                    System.out.println("\u001B[32m exit\u001B[0m"+" Salir");
                     System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
                     System.console().readLine();
                 }
-            } else if (opcion[0].equals("kill")) {
-                nombre = "\u001B[34m"+opcion[1]+"\u001B[0m";
-                simulador.eliminarProceso(nombre);
-                System.out.println("\u001B[35mProceso: \u001B[0m"+nombre+" \u001B[31meliminado\u001B[0m");
-                System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
-                System.console().readLine();
-            } else if (opcion[0].equals("change")) {
-                if (opcion[1].equals("-FIFO") || opcion[1].equals("-LRU")) {
-                    tipoMemoria = opcion[1].substring(1);
-                    simulador.cambiarAlgoritmo(tipoMemoria);
-                } else {
-                    System.out.println("Opcion no valida");
-                }
-            } else if (opcion[0].equals("exit")) {
-                System.out.print("\033[H\033[2J");
-                System.out.flush();
-                System.exit(0);
-            }else if (opcion[0].equals("-help")) {
+            } catch (Exception e) {
+                System.out.println("\n\u001B[34m"+titulo+"\u001B[0m"); 
+                // nombre del autor en color verde
+                System.out.println("\u001B[32mAutor: \u001B[0m"+"\u001B[01m\u001B[35mDiego Fernandez\u001B[0m");
+                // tipo de memoria estara en color rojo
+                System.out.println("\u001B[21mTipo de memoria:\u001B[0m \u001B[31m"+tipoMemoria+"\u001B[0m\n");
                 System.out.println("\u001B[32m add <nombre_proceso> <quantum>.\u001B[0m"+" Agregar proceso");
                 System.out.println("\u001B[32m add -l <Nombre_Archivo.txt>.\u001B[0m"+" Agrega un lote de procesos que debe ser cargado desde un fichero");
                 System.out.println("\u001B[32m run\u001B[0m"+" Ejecutar procesos");
@@ -283,21 +320,7 @@ public class Main {
                 System.out.println("\u001B[32m change (-FIFO o -LRU).\u001B[0m"+" Cambiar algoritmo de reubicacion");
                 System.out.println("\u001B[32m exit\u001B[0m"+" Salir");
                 System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
-                System.console().readLine();
-            } else {
-                System.out.println("\u001B[32m add <nombre_proceso> <quantum>.\u001B[0m"+" Agregar proceso");
-                System.out.println("\u001B[32m add -l <Nombre_Archivo.txt>.\u001B[0m"+" Agrega un lote de procesos que debe ser cargado desde un fichero");
-                System.out.println("\u001B[32m run\u001B[0m"+" Ejecutar procesos");
-                System.out.println("\u001B[32m look -main\u001B[0m"+" Ver Procesos en memoria principal");
-                System.out.println("\u001B[32m look -swap\u001B[0m"+" Ver Procesos en memoria de intercambio");
-                System.out.println("\u001B[32m look -all\u001B[0m"+" Ver todos los procesos");
-                System.out.println("\u001B[32m look -queue\u001B[0m"+" Ver cola de procesos");
-                System.out.println("\u001B[32m look -help\u001B[0m"+" Ver opciones de look");
-                System.out.println("\u001B[32m look \u001B[0m"+" Ver opciones de look");
-                System.out.println("\u001B[32m kill <nombre_proceso>.\u001B[0m"+" Eliminar proceso");
-                System.out.println("\u001B[32m change (-FIFO o -LRU).\u001B[0m"+" Cambiar algoritmo de reubicacion");
-                System.out.println("\u001B[32m exit\u001B[0m"+" Salir");
-                System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
+                //System.out.println(e.getMessage());
                 System.console().readLine();
             }
         }

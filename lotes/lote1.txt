@@ -6,3 +6,5 @@ proceso5 4
 proceso6 5
 proceso7 7
 proceso8 8
+proceso9 9
+proceso10 10
