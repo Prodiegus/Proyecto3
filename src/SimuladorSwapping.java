@@ -3,23 +3,24 @@ package src;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Stack;
 
 public class SimuladorSwapping {
     String tipoMemoria; // "LRU" o "FIFO"
     Proceso[] memoriaPrincipal;
     Proceso[] memoriaIntercambio;
-    LinkedList<Proceso> colaLRUMain;
+    Stack<Proceso> colaLRUMain;
     Queue<Proceso> colaFIFOMain;
-    LinkedList<Proceso> colaLRUSwap = new LinkedList<>();
-    Queue<Proceso> colaFIFOSwap = new LinkedList<>();
+    Stack<Proceso> colaLRUSwap;
+    Queue<Proceso> colaFIFOSwap;
 
     public SimuladorSwapping(int tamano_memoria_intercambio, int tamano_memoria_principal, String tipoMemoria) {
         this.tipoMemoria = tipoMemoria;
         this.memoriaPrincipal = new Proceso[tamano_memoria_principal];
         this.memoriaIntercambio = new Proceso[tamano_memoria_intercambio];
-        this.colaLRUMain = new LinkedList<>();
+        this.colaLRUMain = new Stack<>();
         this.colaFIFOMain = new LinkedList<>();
-        this.colaLRUSwap = new LinkedList<>();
+        this.colaLRUSwap = new Stack<>();
         this.colaFIFOSwap = new LinkedList<>();
     }
 
@@ -46,8 +47,8 @@ public class SimuladorSwapping {
         }
         if (!espacioDisponible) {
             if (tipoMemoria.equals("LRU")) {
-                // sacamos de la cola el proceso que sea last recently used
-                aux = colaLRUMain.removeFirst();
+                // sacamos de la cola el proceso el ultimo que se uso
+                aux = colaLRUMain.pop();
                 colaFIFOMain.remove(aux);
                 // buscamos el proceso en la memoria principal
                 for (int i = 0; i < memoriaPrincipal.length; i++) {
@@ -57,7 +58,7 @@ public class SimuladorSwapping {
                         for (int j = 0; j < memoriaIntercambio.length; j++) {
                             if (memoriaIntercambio[j] == null) {
                                 memoriaIntercambio[j] = aux;
-                                colaLRUSwap.add(aux);
+                                colaLRUSwap.push(aux);
                                 colaFIFOSwap.add(aux);
                                 break;
                             }
@@ -68,14 +69,14 @@ public class SimuladorSwapping {
                         }
                         if (!espacioEnSwap) {
                             // sacamos de la cola el proceso que sea last recently used
-                            aux2 = colaLRUSwap.removeFirst();
+                            aux2 = colaLRUSwap.pop();
                             colaFIFOSwap.remove(aux2);
                             // buscamos el proceso en la memoria intercamio
                             for (int k = 0; k < memoriaIntercambio.length; k++) {
                                 if (memoriaIntercambio[k].equals(aux2)) {
                                     // agregamos el proceso a la memoria de intercambio
                                     memoriaIntercambio[k] = aux;
-                                    colaLRUSwap.add(aux);
+                                    colaLRUSwap.push(aux);
                                     colaFIFOSwap.add(aux);
                                     break;
                                 }
@@ -97,7 +98,7 @@ public class SimuladorSwapping {
                             if (memoriaIntercambio[j] == null) {
                                 memoriaIntercambio[j] = aux;
                                 colaFIFOSwap.add(aux);
-                                colaLRUSwap.add(aux);
+                                colaLRUSwap.push(aux);
                                 break;
                             }
                             // Si no hay espacio en la memoria de intercambio usamos la cola
@@ -115,7 +116,7 @@ public class SimuladorSwapping {
                                     // agregamos el proceso a la memoria de intercambio
                                     memoriaIntercambio[k] = aux;
                                     colaFIFOSwap.add(aux);
-                                    colaLRUSwap.add(aux);
+                                    colaLRUSwap.push(aux);
                                     break;
                                 }
                             }
@@ -154,7 +155,7 @@ public class SimuladorSwapping {
             // tomamos el proceso de la memoria principal dependiendo del algoritmo
             if (tipoMemoria.equals("LRU")) {
                 // sacamos de la cola el proceso que sea last recently used
-                proceso = colaLRUMain.removeFirst();
+                proceso = colaLRUMain.pop();
                 colaFIFOMain.remove(proceso);
             } else if (tipoMemoria.equals("FIFO")) {
                 // sacamos de la cola el proceso que sea first in first out
@@ -186,14 +187,14 @@ public class SimuladorSwapping {
                 // sacamos de la cola el proceso que sea last recently used
                 System.out.println("se saca de la memoria de intercambio");
                 if (!colaLRUSwap.isEmpty()) {
-                    proceso = colaLRUSwap.removeFirst();
+                    proceso = colaLRUSwap.pop();
                     colaFIFOSwap.remove(proceso);
                     // buscamos el proceso en la memoria intercamio
                     for (int k = 0; k < memoriaIntercambio.length; k++) {
                         if (memoriaIntercambio[k]!=null && memoriaIntercambio[k].equals(proceso)) {
                             // saca el proceso de la memoria de intercambio
                             memoriaIntercambio[k] = null;
-                            colaLRUMain.add(proceso);
+                            colaLRUMain.push(proceso);
                             colaFIFOMain.add(proceso);
                             break;
                         }
@@ -212,7 +213,7 @@ public class SimuladorSwapping {
                             //saca el proceso de la memoria de intercambio
                             memoriaIntercambio[k] = null;
                             colaFIFOMain.add(proceso);
-                            colaLRUMain.add(proceso);
+                            colaLRUMain.push(proceso);
                         }
                     }
                 }else{
