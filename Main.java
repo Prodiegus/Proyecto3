@@ -236,7 +236,8 @@ public class Main {
                         procesos = new ArrayList<>();
                     }
                 } else if (opcion[0].equals("run")) {
-                    simulador.ejecutarProcesos();
+                    simulador.correr();
+                    //simulador.ejecutarProcesos();
                     System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
                     System.console().readLine();
                 } else if (opcion[0].equals("look")) {

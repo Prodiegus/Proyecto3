@@ -13,7 +13,9 @@ public class SimuladorSwapping {
     Queue<Proceso> colaFIFOMain;
     Stack<Proceso> colaLRUSwap;
     Queue<Proceso> colaFIFOSwap;
+    int actulazaciones = 0;
     int quantumDefault = 2;
+    private final static int HILOS = 4;
 
     public SimuladorSwapping(int tamano_memoria_intercambio, int tamano_memoria_principal, String tipoMemoria) {
         this.tipoMemoria = tipoMemoria;
@@ -132,7 +134,7 @@ public class SimuladorSwapping {
         colaLRUMain.add(nuevoProceso);
     }
 
-    public void ejecutarProcesos() {
+    public void correr(){
         String titulo = "\n"+
             "\t┌───┐      ┌┐     ┌┐\n"+
             "\t│┌─┐│      ││     ││\n"+
@@ -148,6 +150,78 @@ public class SimuladorSwapping {
             "\t└───┘└┘└┘└┘└┤┌─┤┌─┴┴┘└┴─┐│\n"+
             "\t            ││ ││     ┌─┘│\n"+
             "\t            └┘ └┘     └──┘\n";
+        // mostramos un contador de tiempo de lo que llevamos de ejecucion en segundos
+        long startTime = System.currentTimeMillis();
+        // limpiamos la consola
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+        // mostramos el titulo en color verde
+        System.out.println("\u001B[32m" + titulo + "\u001B[0m");
+        System.out.println("Quedan procesos: " + (hayProcesos()? "si" : "no"));
+        System.out.println("Tiempo: " + (System.currentTimeMillis() - startTime) / 1000 + " segundos");
+        Thread[] hilos = new Thread[HILOS];
+        for (int i = 0; i < HILOS; i++) {
+            hilos[i] = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    ejecutarProcesos();
+                }
+            });
+            hilos[i].start();
+        }
+        for (int i = 0; i < HILOS; i++) {
+            try {
+                hilos[i].join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    private void actualizarINF(long startTime){
+        if (actulazaciones == HILOS) {
+            String titulo = "\n"+
+                "\t┌───┐      ┌┐     ┌┐\n"+
+                "\t│┌─┐│      ││     ││\n"+
+                "\t│└──┬┬┐┌┬┐┌┤│┌──┬─┘├──┬─┐\n"+
+                "\t└──┐├┤└┘││││││┌┐│┌┐│┌┐│┌┘\n"+
+                "\t│└─┘│││││└┘│└┤┌┐│└┘│└┘││\n"+
+                "\t└───┴┴┴┴┴──┴─┴┘└┴──┴──┴┘\n"+
+                "\t┌───┐\n"+
+                "\t│┌─┐│\n"+
+                "\t│└──┬┐┌┐┌┬──┬──┬──┬┬─┐┌──┐\n"+
+                "\t└──┐│└┘└┘│┌┐│┌┐│┌┐├┤┌┐┤┌┐│\n"+
+                "\t│└─┘├┐┌┐┌┤┌┐│└┘│└┘│││││└┘│\n"+
+                "\t└───┘└┘└┘└┘└┤┌─┤┌─┴┴┘└┴─┐│\n"+
+                "\t            ││ ││     ┌─┘│\n"+
+                "\t            └┘ └┘     └──┘\n";
+            System.out.print("\033[H\033[2J");
+            System.out.flush();
+            // mostramos el titulo en color amarillo
+            System.out.println("\u001B[33m" + titulo + "\u001B[0m");
+            System.out.println("Quedan procesos: " + (hayProcesos()? "si" : "no"));
+            System.out.println("Tiempo: " + (System.currentTimeMillis() - startTime) / 1000 + " segundos");
+            verTodosLosProcesos();
+        }else{
+            actulazaciones++;
+        }
+    }
+
+    public void ejecutarProcesos() {
+        /*String titulo = "\n"+
+            "\t┌───┐      ┌┐     ┌┐\n"+
+            "\t│┌─┐│      ││     ││\n"+
+            "\t│└──┬┬┐┌┬┐┌┤│┌──┬─┘├──┬─┐\n"+
+            "\t└──┐├┤└┘││││││┌┐│┌┐│┌┐│┌┘\n"+
+            "\t│└─┘│││││└┘│└┤┌┐│└┘│└┘││\n"+
+            "\t└───┴┴┴┴┴──┴─┴┘└┴──┴──┴┘\n"+
+            "\t┌───┐\n"+
+            "\t│┌─┐│\n"+
+            "\t│└──┬┐┌┐┌┬──┬──┬──┬┬─┐┌──┐\n"+
+            "\t└──┐│└┘└┘│┌┐│┌┐│┌┐├┤┌┐┤┌┐│\n"+
+            "\t│└─┘├┐┌┐┌┤┌┐│└┘│└┘│││││└┘│\n"+
+            "\t└───┘└┘└┘└┘└┤┌─┤┌─┴┴┘└┴─┐│\n"+
+            "\t            ││ ││     ┌─┘│\n"+
+            "\t            └┘ └┘     └──┘\n";*/
         
         // mostramos un contador de tiempo de lo que llevamos de ejecucion en segundos
         long startTime = System.currentTimeMillis();
@@ -173,14 +247,6 @@ public class SimuladorSwapping {
                         break;
                     }
                 }
-                // limpiamos la consola
-                System.out.print("\033[H\033[2J");
-                System.out.flush();
-                // mostramos el titulo en color verde
-                System.out.println("\u001B[32m" + titulo + "\u001B[0m");
-                System.out.println("proceso: " + proceso.nombre);
-                System.out.println("Quedan procesos: " + (hayProcesos()? "si" : "no"));
-                System.out.println("Tiempo: " + (System.currentTimeMillis() - startTime) / 1000 + " segundos");
                 proceso = proceso.quantum == 0 ? null : proceso;
                 verTodosLosProcesos();
             }
@@ -244,19 +310,12 @@ public class SimuladorSwapping {
                     break;
                 }
             } 
-            System.out.print("\033[H\033[2J");
-            System.out.flush();
-            // mostramos el titulo en color amarillo
-            System.out.println("\u001B[33m" + titulo + "\u001B[0m");
-            System.out.println("proceso: " + "Esperando proceso");
-            System.out.println("Quedan procesos: " + (hayProcesos()? "si" : "no"));
-            System.out.println("Tiempo: " + (System.currentTimeMillis() - startTime) / 1000 + " segundos");
-            verTodosLosProcesos();
             // eliminamos todos los nulos que puedan estar en las listas de colas
             while (colaLRUMain.remove(null));
             while (colaFIFOMain.remove(null));
             while (colaLRUSwap.remove(null));
             while (colaFIFOSwap.remove(null));
+            actualizarINF(startTime);
         }
         
     }
