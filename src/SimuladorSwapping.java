@@ -230,6 +230,7 @@ public class SimuladorSwapping {
                         }
                     }
                 }else{
+                    // si no hay procesos en la cola de swap agregamos el proceso a la memoria principal
                     proceso = null;
                     if(procesoEjecutado != null)
                         agregarProceso(procesoEjecutado.nombre, procesoEjecutado.quantum);
