@@ -209,7 +209,9 @@ public class SimuladorSwapping {
                     }
                 }else{
                     proceso = null;
-                    agregarProceso(procesoEjecutado.nombre, procesoEjecutado.quantum);
+                    if (procesoEjecutado != null) {
+                        agregarProceso(procesoEjecutado.nombre, procesoEjecutado.quantum);   
+                    }
                 }
             } else if (tipoMemoria.equals("FIFO")){
                 // sacamos de la cola el proceso que sea first in first out
@@ -249,6 +251,11 @@ public class SimuladorSwapping {
             System.out.println("Quedan procesos: " + (hayProcesos()? "si" : "no"));
             System.out.println("Tiempo: " + (System.currentTimeMillis() - startTime) / 1000 + " segundos");
             verTodosLosProcesos();
+            // eliminamos todos los nulos que puedan estar en las listas de colas
+            while (colaLRUMain.remove(null));
+            while (colaFIFOMain.remove(null));
+            while (colaLRUSwap.remove(null));
+            while (colaFIFOSwap.remove(null));
         }
         
     }
@@ -444,13 +451,13 @@ public class SimuladorSwapping {
 
         // Eliminar proceso de la cola LRU
         for (int i = 0; i < colaLRUMain.size(); i++) {
-            if (colaLRUMain.get(i).nombre.equals(nombre)) {
+            if (colaLRUMain.get(i) != null && colaLRUMain.get(i).nombre.equals(nombre)) {
                 colaLRUMain.remove(i);
                 break;
             }
         }
         for (int i = 0; i < colaLRUSwap.size(); i++) {
-            if (colaLRUSwap.get(i).nombre.equals(nombre)) {
+            if (colaLRUSwap.get(i)!=null && colaLRUSwap.get(i).nombre.equals(nombre)) {
                 colaLRUSwap.remove(i);
                 break;
             }

@@ -210,6 +210,7 @@ public class Main {
                         }
                     }else{
                         nombre = "\u001B[34m"+opcion[1]+"\u001B[0m";
+
                         quantum = Integer.parseInt(opcion[2]);
                         // si el quantum es mayor a 5 se dividira en mas procesos hasta que el quantum sea menor o igual a 5
                         contador = 1;
