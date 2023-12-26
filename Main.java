@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 
 import src.SimuladorSwapping;
 
@@ -137,7 +138,8 @@ public class Main {
         }
         SimuladorSwapping simulador = new SimuladorSwapping(tamanoMemoriaIntercambio, tamanoMemoriaPrincipal, tipoMemoria);
         simulador.cambiarAlgoritmo(tipoMemoria);
-        
+        ArrayList<String[]> procesos = new ArrayList<>();
+        int contador = 1;
         while (true) {
             try {
                 //limpiamos la pantalla
@@ -173,7 +175,26 @@ public class Main {
                                 String[] proceso = linea.split(" ");
                                 nombre = "\u001B[34m"+proceso[0]+"\u001B[0m";
                                 quantum = Integer.parseInt(proceso[1]);
-                                simulador.agregarProceso(nombre, quantum);
+                                contador = 1;
+                                while (quantum > 5) {
+                                    procesos.add(new String[]{nombre+"-\u001B[35mp"+contador+"\u001B[0m", "5"});
+                                    quantum -= 5;
+                                    contador++;
+                                }
+                                procesos.add(new String[]{nombre+"-\u001B[35mp"+contador+"\u001B[0m", String.valueOf(quantum)});
+                                contador = 1;
+                                if(procesos.size() > simulador.getMemoriaDisponible()){
+                                    // en rojo se le notificara al usuario que no se pudo agregar el proceso
+                                    System.out.println("\u001B[31mEl proceso que intenta agregar no cabe en memoria actualmente\u001B[0m");
+                                    System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
+                                    System.console().readLine();
+                                }else{
+                                    for (String[] process : procesos) {
+                                        simulador.agregarProceso(process[0], Integer.parseInt(process[1]));
+                                    }
+                                }
+                                procesos.clear();
+                                procesos = new ArrayList<>();
                             }
                             br.close();
                         } catch (Exception e) {
@@ -190,7 +211,28 @@ public class Main {
                     }else{
                         nombre = "\u001B[34m"+opcion[1]+"\u001B[0m";
                         quantum = Integer.parseInt(opcion[2]);
-                        simulador.agregarProceso(nombre, quantum);
+                        // si el quantum es mayor a 5 se dividira en mas procesos hasta que el quantum sea menor o igual a 5
+                        contador = 1;
+                        while (quantum > 5) {
+                            procesos.add(new String[]{nombre+"-\u001B[35mp"+contador+"\u001B[0m", "5"});
+                            quantum -= 5;
+                            contador++;
+                        }
+                        procesos.add(new String[]{nombre+"-\u001B[35mp"+contador+"\u001B[0m", String.valueOf(quantum)});
+                        contador = 1;
+                        // si el tamano del proceso no cabe en memoria principal ni de intercambio se le notificara al usuario y no se agregara
+                        if(procesos.size() > simulador.getMemoriaDisponible()){
+                            // en rojo se le notificara al usuario que no se pudo agregar el proceso
+                            System.out.println("\u001B[31mEl proceso que intenta agregar no cabe en memoria actualmente\u001B[0m");
+                            System.out.println("\u001B[31mPresione enter para continuar...\u001B[0m");
+                            System.console().readLine();
+                        }else{
+                            for (String[] proceso : procesos) {
+                                simulador.agregarProceso(proceso[0], Integer.parseInt(proceso[1]));
+                            }
+                        }
+                        procesos.clear();
+                        procesos = new ArrayList<>();
                     }
                 } else if (opcion[0].equals("run")) {
                     simulador.ejecutarProcesos();

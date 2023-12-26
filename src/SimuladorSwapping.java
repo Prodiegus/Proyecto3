@@ -13,6 +13,7 @@ public class SimuladorSwapping {
     Queue<Proceso> colaFIFOMain;
     Stack<Proceso> colaLRUSwap;
     Queue<Proceso> colaFIFOSwap;
+    int quantumDefault = 2;
 
     public SimuladorSwapping(int tamano_memoria_intercambio, int tamano_memoria_principal, String tipoMemoria) {
         this.tipoMemoria = tipoMemoria;
@@ -151,6 +152,7 @@ public class SimuladorSwapping {
         // mostramos un contador de tiempo de lo que llevamos de ejecucion en segundos
         long startTime = System.currentTimeMillis();
         Proceso proceso = null;
+        Proceso procesoEjecutado = null;
         while (hayProcesos()) {
             // tomamos el proceso de la memoria principal dependiendo del algoritmo
             if (tipoMemoria.equals("LRU")) {
@@ -162,12 +164,12 @@ public class SimuladorSwapping {
                 proceso = colaFIFOMain.poll();
                 colaLRUMain.remove(proceso);
             }
-            while (proceso != null && proceso.quantum > 0) {
+            for(int i = 0; i<quantumDefault && proceso != null; i++){
                 proceso = run(proceso);
                 // buscar el proceso en la memoria principal
                 for (int j = 0; j < memoriaPrincipal.length; j++) {
                     if (memoriaPrincipal[j] != null && memoriaPrincipal[j].equals(proceso)) {
-                        memoriaPrincipal[j] = proceso;
+                        memoriaPrincipal[j] = proceso.quantum == 0 ? null : proceso;
                         break;
                     }
                 }
@@ -179,10 +181,14 @@ public class SimuladorSwapping {
                 System.out.println("proceso: " + proceso.nombre);
                 System.out.println("Quedan procesos: " + (hayProcesos()? "si" : "no"));
                 System.out.println("Tiempo: " + (System.currentTimeMillis() - startTime) / 1000 + " segundos");
+                proceso = proceso.quantum == 0 ? null : proceso;
                 verTodosLosProcesos();
             }
-            System.out.println("se termino de ejecutar el proceso");
-            //traemos un proceso desde la memoria de intercambio dependiendo del algoritmo
+            // si el proceso es distinto de null lo sacamos de memoria y lo volvemos a cargar
+            procesoEjecutado = proceso;
+            if (procesoEjecutado != null) {
+                eliminarProceso(procesoEjecutado.nombre);
+            }
             if (tipoMemoria.equals("LRU")) {
                 // sacamos de la cola el proceso que sea last recently used
                 System.out.println("se saca de la memoria de intercambio");
@@ -193,7 +199,9 @@ public class SimuladorSwapping {
                     for (int k = 0; k < memoriaIntercambio.length; k++) {
                         if (memoriaIntercambio[k]!=null && memoriaIntercambio[k].equals(proceso)) {
                             // saca el proceso de la memoria de intercambio
-                            memoriaIntercambio[k] = null;
+                            memoriaIntercambio[k] = procesoEjecutado;
+                            colaLRUSwap.push(procesoEjecutado);
+                            colaFIFOSwap.add(procesoEjecutado);
                             colaLRUMain.push(proceso);
                             colaFIFOMain.add(proceso);
                             break;
@@ -201,6 +209,7 @@ public class SimuladorSwapping {
                     }
                 }else{
                     proceso = null;
+                    agregarProceso(procesoEjecutado.nombre, procesoEjecutado.quantum);
                 }
             } else if (tipoMemoria.equals("FIFO")){
                 // sacamos de la cola el proceso que sea first in first out
@@ -211,13 +220,17 @@ public class SimuladorSwapping {
                     for (int k = 0; k < memoriaIntercambio.length; k++) {
                         if (memoriaIntercambio[k]!=null && memoriaIntercambio[k].equals(proceso)) {
                             //saca el proceso de la memoria de intercambio
-                            memoriaIntercambio[k] = null;
+                            memoriaIntercambio[k] = procesoEjecutado;
+                            colaFIFOSwap.add(procesoEjecutado);
+                            colaLRUSwap.push(procesoEjecutado);
                             colaFIFOMain.add(proceso);
                             colaLRUMain.push(proceso);
                         }
                     }
                 }else{
                     proceso = null;
+                    if(procesoEjecutado != null)
+                        agregarProceso(procesoEjecutado.nombre, procesoEjecutado.quantum);
                 }
             }
             //System.out.println("se agrega a la memoria principal el proceso "+((proceso!=null)?proceso.nombre:"que no existe el proceso"));
@@ -227,11 +240,12 @@ public class SimuladorSwapping {
                     memoriaPrincipal[j] = proceso;
                     break;
                 }
-            }
+            } 
             System.out.print("\033[H\033[2J");
             System.out.flush();
             // mostramos el titulo en color amarillo
             System.out.println("\u001B[33m" + titulo + "\u001B[0m");
+            System.out.println("proceso: " + "Esperando proceso");
             System.out.println("Quedan procesos: " + (hayProcesos()? "si" : "no"));
             System.out.println("Tiempo: " + (System.currentTimeMillis() - startTime) / 1000 + " segundos");
             verTodosLosProcesos();
@@ -456,6 +470,20 @@ public class SimuladorSwapping {
                 break;
             }
         }
+    }
+    public int getMemoriaDisponible(){
+        int memoriaDisponible = 0;
+        for (int i = 0; i < memoriaPrincipal.length; i++) {
+            if (memoriaPrincipal[i] == null) {
+                memoriaDisponible++;
+            }
+        }
+        for (int i = 0; i < memoriaIntercambio.length; i++) {
+            if (memoriaIntercambio[i] == null) {
+                memoriaDisponible++;
+            }
+        }
+        return memoriaDisponible;
     }
 
     public static void main(String[] args) {

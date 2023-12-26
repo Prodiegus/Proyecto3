@@ -1,6 +1,6 @@
 # Simulador de Memoria Swapping
 ## Descripción
-Este programa simulara el funcionamiento de una memoria swapping, contiene un menu de linea de comandos que permite al usuario realizar cambios estaticos y un menu interno que permite interactuar con la memoria.
+Este programa simulara el funcionamiento de una memoria swapping, contiene un menu de linea de comandos que permite al usuario realizar cambios estaticos y un menu interno que permite interactuar con la memoria, cada slot de memoria tiene un tamaño de 5 quantum siendo asi cada vez que se agregue un proceso este se dividira hasta cumplir con la condicion, si el usuario intenta agregar un proceso que ya no cabe en los slots de memoria, este no sera agregado ya que no hay espacio en memoria para este no obstante si el sistema intenta agregar un proceso para el que ya no hay espacio en memoria este liberara espacio para el proceso si y solo si la particion de este cabe dentro del tamaño total de la memoria memoria intercambio y memoria principal.
 ## Entradas de lineas de comandos
 ### -h o -help
 Muestra la ayuda del programa.
@@ -95,6 +95,6 @@ look -swap
 java Main
 look -all
 ```
-## autore
+## Autor
 - [Diego Fernandez](mailto:dfernandez19@alumnos.utalca.cl)
 
