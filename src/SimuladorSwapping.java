@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Stack;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
 
 
 public class SimuladorSwapping {
@@ -18,8 +16,9 @@ public class SimuladorSwapping {
     Queue<Proceso> colaFIFOSwap;
     int quantumDefault = 2;
     private final static int HILOS = 4;
-    private CyclicBarrier barrier;
+    //private CyclicBarrier barrier;
     long startTime = System.currentTimeMillis();
+    int FPS = 27;
 
     public SimuladorSwapping(int tamano_memoria_intercambio, int tamano_memoria_principal, String tipoMemoria) {
         this.tipoMemoria = tipoMemoria;
@@ -29,9 +28,9 @@ public class SimuladorSwapping {
         this.colaFIFOMain = new LinkedList<>();
         this.colaLRUSwap = new Stack<>();
         this.colaFIFOSwap = new LinkedList<>();
-        this.barrier = new CyclicBarrier(HILOS, () -> {
-            actualizarINF();
-        });
+        //this.barrier = new CyclicBarrier(HILOS, () -> {
+        //    actualizarINF();
+        //});
     }
 
     public void agregarProceso(String nombre, int quantum) {
@@ -159,14 +158,17 @@ public class SimuladorSwapping {
             "\t            └┘ └┘     └──┘\n";
         // mostramos un contador de tiempo de lo que llevamos de ejecucion en segundos
         this.startTime = System.currentTimeMillis();
-        // limpiamos la consolaSystem.out.print("\033[H\033[2J");
-        
+        // limpiamos la consola
+        System.out.print("\033[H\033[2J");
         System.out.flush();
         // mostramos el titulo en color verde
         System.out.println("\u001B[32m" + titulo + "\u001B[0m");
         System.out.println("Quedan procesos: " + (hayProcesos()? "si" : "no"));
         System.out.println("Tiempo: " + (System.currentTimeMillis() - startTime) / 1000 + " segundos");
+        verTodosLosProcesos();
+
         Thread[] hilos = new Thread[HILOS];
+        int tasa_de_refresco = 1000/FPS;
         // vinculamos el semaforo a los hilos
         for (int i = 0; i < HILOS; i++) {
             hilos[i] = new Thread(new Runnable() {
@@ -176,6 +178,28 @@ public class SimuladorSwapping {
                 }
             });
             hilos[i].start();
+        }
+        //haremos un ultimo hilo que este actualizando la informacion cada 500 milisegundos
+        Thread Informador = new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                while (hayProcesos()) {
+                    try {
+                        Thread.sleep(tasa_de_refresco);// esto equivale a 
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    actualizarINF();
+                }
+            }
+        });
+        Informador.start();
+        // esperamos a que todos los hilos terminen
+        try {
+            Informador.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
         for (int i = 0; i < HILOS; i++) {
             try {
@@ -263,18 +287,20 @@ public class SimuladorSwapping {
                 // buscar el proceso en la memoria principal
                 for (int j = 0; j < memoriaPrincipal.length; j++) {
                     synchronized (this) {
-                        if (memoriaPrincipal[j] != null && memoriaPrincipal[j].equals(proceso)) {
+                        if (memoriaPrincipal[j] == null) {
+                            break;
+                        }else if (memoriaPrincipal[j].equals(proceso)) {
                             memoriaPrincipal[j] = proceso.quantum == 0 ? null : proceso;
                             break;
                         }
                     }
                 }
                 proceso = proceso.quantum == 0 ? null : proceso;
-                try {
+                /*try {
                     barrier.await();
                 } catch (InterruptedException | BrokenBarrierException e) {
                     e.printStackTrace();
-                }
+                }*/
             }
             if (!hayProcesos()) {
                 return;
@@ -356,11 +382,11 @@ public class SimuladorSwapping {
             }
             //actualizarINF();System.out.print("\033[H\033[2J");
             
-            try {
+            /*try {
                 barrier.await();
             } catch (InterruptedException | BrokenBarrierException e) {
                 e.printStackTrace();
-            }
+            }*/
             if (!hayProcesos()) {
                 return;
             }
