@@ -241,8 +241,12 @@ public class SimuladorSwapping {
             if (tipoMemoria.equals("LRU")) {
                 // sacamos de la cola el proceso que sea last recently used
                 synchronized (this) {
-                    proceso = colaLRUMain.pop();
-                    colaFIFOMain.remove(proceso);
+                    if (colaLRUMain.isEmpty()) {
+                        return;
+                    }else{
+                        proceso = colaLRUMain.pop();
+                        colaFIFOMain.remove(proceso);
+                    }
                 }
             } else if (tipoMemoria.equals("FIFO")) {
                 // sacamos de la cola el proceso que sea first in first out
